@@ -1,0 +1,17 @@
+declare module 'geojson' {
+  export interface Geometry {
+    type: string;
+    coordinates: number[][][] | number[][][][] | number[] | number[][];
+  }
+
+  export interface Feature {
+    type: string;
+    properties: { [key: string]: any };
+    geometry: Geometry;
+  }
+
+  export interface FeatureCollection {
+    type: string;
+    features: Feature[];
+  }
+}
