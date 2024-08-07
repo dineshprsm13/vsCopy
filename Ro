@@ -1,0 +1,21 @@
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes as Switch } from 'react-router-dom';
+import HomePage from './HomePage';
+import MapPage from './MapPage';
+import SubPage1 from './SubPage1';
+import SubPage2 from './SubPage2';
+
+const AppRoutes: React.FC = () => {
+  return (
+    <Router>
+      <Switch>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/map" element={<MapPage />} />
+        <Route path="/map/subpage1" element={<SubPage1 />} />
+        <Route path="/map/subpage2" element={<SubPage2 />} />
+      </Switch>
+    </Router>
+  );
+};
+
+export default AppRoutes;
