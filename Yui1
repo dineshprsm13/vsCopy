@@ -1,0 +1,56 @@
+import React, { useEffect, useRef } from 'react';
+import * as d3 from 'd3';
+import worldData from './world-geojson.json'; // Make sure to import your GeoJSON file
+
+const Map: React.FC = () => {
+  const svgRef = useRef<SVGSVGElement | null>(null);
+
+  useEffect(() => {
+    const svg = d3.select(svgRef.current);
+    const width = 800;
+    const height = 600;
+
+    // Define the projection
+    const projection = d3.geoMercator().fitSize([width, height], worldData);
+    const path = d3.geoPath().projection(projection);
+
+    // Draw the map
+    svg.selectAll('path')
+      .data((worldData as any).features)
+      .enter()
+      .append('path')
+      .attr('d', path)
+      .attr('fill', '#ccc')
+      .attr('stroke', '#333');
+
+    // Define points and lines (replace this with your actual data)
+    const points = [
+      { name: 'Point A', coordinates: [-74.006, 40.7128] }, // New York
+      { name: 'Point B', coordinates: [-0.1276, 51.5074] }, // London
+    ];
+
+    // Draw points
+    svg.selectAll('circle')
+      .data(points)
+      .enter()
+      .append('circle')
+      .attr('cx', d => projection(d.coordinates)[0])
+      .attr('cy', d => projection(d.coordinates)[1])
+      .attr('r', 5)
+      .attr('fill', 'red');
+
+    // Draw lines
+    svg.append('line')
+      .attr('x1', projection(points[0].coordinates)[0])
+      .attr('y1', projection(points[0].coordinates)[1])
+      .attr('x2', projection(points[1].coordinates)[0])
+      .attr('y2', projection(points[1].coordinates)[1])
+      .attr('stroke', 'blue')
+      .attr('stroke-width', 2);
+
+  }, []);
+
+  return <svg ref={svgRef} width={800} height={600}></svg>;
+};
+
+export default Map;
