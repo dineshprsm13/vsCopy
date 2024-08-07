@@ -1,0 +1,46 @@
+// src/MapView.tsx
+import React from 'react';
+import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix marker icons issue
+delete L.Icon.Default.prototype._getIconUrl;
+
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+});
+
+type City = {
+  name: string;
+  coordinates: [number, number];
+};
+
+const cities: City[] = [
+  { name: 'New York', coordinates: [40.712776, -74.005974] },
+  { name: 'Los Angeles', coordinates: [34.052235, -118.243683] },
+  { name: 'Chicago', coordinates: [41.878113, -87.629799] },
+];
+
+const MapView: React.FC = () => {
+  const polylinePositions = cities.map(city => city.coordinates);
+
+  return (
+    <MapContainer center={[39.8283, -98.5795]} zoom={4} style={{ height: '100vh', width: '100%' }}>
+      <TileLayer
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+      />
+      {cities.map((city, index) => (
+        <Marker key={index} position={city.coordinates}>
+          <Popup>{city.name}</Popup>
+        </Marker>
+      ))}
+      <Polyline positions={polylinePositions} color="blue" />
+    </MapContainer>
+  );
+};
+
+export default MapView;
