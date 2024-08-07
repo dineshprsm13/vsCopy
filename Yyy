@@ -1,0 +1,37 @@
+// src/CityMap.js
+import React from 'react';
+import { MapContainer, TileLayer, Polyline, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+
+const CityMap = () => {
+  const cities = [
+    { name: 'New York', position: [40.7128, -74.0060] },
+    { name: 'Los Angeles', position: [34.0522, -118.2437] },
+    { name: 'Chicago', position: [41.8781, -87.6298] }
+  ];
+
+  const connections = [
+    [cities[0].position, cities[1].position],
+    [cities[1].position, cities[2].position],
+    [cities[2].position, cities[0].position]
+  ];
+
+  return (
+    <MapContainer center={[39.8283, -98.5795]} zoom={4} style={{ height: '100vh', width: '100%' }}>
+      <TileLayer
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+      />
+      {cities.map((city, idx) => (
+        <Marker key={idx} position={city.position}>
+          <Popup>{city.name}</Popup>
+        </Marker>
+      ))}
+      {connections.map((connection, idx) => (
+        <Polyline key={idx} positions={connection} color="blue" />
+      ))}
+    </MapContainer>
+  );
+};
+
+export default CityMap;
