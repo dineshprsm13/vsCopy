@@ -1,0 +1,19 @@
+const handleSave = async () => {
+  try {
+    const response = await fetch('http://localhost:3001/update-json', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonContent,
+    });
+
+    if (response.ok) {
+      console.log('JSON file updated successfully');
+    } else {
+      console.error('Failed to update JSON file');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
+};
