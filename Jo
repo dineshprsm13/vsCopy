@@ -1,0 +1,16 @@
+  {
+    "location": "London",
+    "latitude": 51.5074,
+    "longitude": -0.1278,
+    "text": "Data centre located in London, UK",
+    "type": "DC",
+    "color": "green"
+  },
+  {
+    "location": "Manchester",
+    "latitude": 53.4808,
+    "longitude": -2.2426,
+    "text": "Data centre located in Manchester, UK",
+    "type": "DC",
+    "color": "blue"
+  },
