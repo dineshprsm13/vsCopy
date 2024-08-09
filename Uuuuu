@@ -1,0 +1,38 @@
+import React, { useState, ChangeEvent } from 'react';
+
+interface MyComponentProps {
+  initialJson: object;
+}
+
+const MyComponent: React.FC<MyComponentProps> = ({ initialJson }) => {
+  const [jsonText, setJsonText] = useState(JSON.stringify(initialJson, null, 2));
+
+  const handleTextAreaChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    setJsonText(event.target.value);
+  };
+
+  const handleUpdateJson = () => {
+    try {
+      const updatedJson = JSON.parse(jsonText);
+      console.log('Updated JSON:', updatedJson);
+      // You can now use updatedJson as needed, e.g., send it to a server or update local state
+    } catch (error) {
+      console.error('Invalid JSON:', error);
+      // Optionally show an error message to the user
+    }
+  };
+
+  return (
+    <div>
+      <textarea
+        value={jsonText}
+        onChange={handleTextAreaChange}
+        rows={20}
+        cols={50}
+      />
+      <button onClick={handleUpdateJson}>Update JSON</button>
+    </div>
+  );
+};
+
+export default MyComponent;
