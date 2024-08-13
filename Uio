@@ -1,0 +1,8 @@
+Workflow:
+User Initiates Withdrawal: The user uses the mobile app or web portal to request a withdrawal from their trading account.
+Authentication: The authentication service verifies the user's identity.
+API Gateway: The request is routed through the API gateway to the transaction service.
+Transaction Service: This service coordinates the transfer of funds from the trading account to the bank account. It interacts with both the trading API and the banking API.
+Core Banking System: Once the funds are transferred to the bank account, the core banking system updates the account balance.
+ATM Network: The user can now withdraw cash from the ATM network.
+Notification: The notification service sends a confirmation to the user about the transaction.
