@@ -1,0 +1,17 @@
+Security Aspects in AI, Including Gen AI Security
+Introduction
+Artificial Intelligence (AI) has unexpectedly developed from a theoretical concept to a pervasive technology, influencing nearly every aspect of modern life. Its ability to revolutionize industries and enhance human skills is huge. However, the speedy advancement of AI, in particular Generative AI (Gen AI), has brought a complicated array of security challenges. This report delves into the vital safety elements of AI, with a selected focus on Gen AI, exploring the problems in detail and offering ability answers.
+
+Analysis
+The intersection of AI and safety is a multifaceted area with a ways-reaching implications. Key safety worries related to AI and Gen AI encompass:
+
+Data Privacy and Security
+Data Collection and Usage: AI fashions frequently require extensive amounts of data for training. This information can contain touchy non-public information, elevating issues about privacy and misuse.
+Data Leakage: Unauthorized get right of entry to to schooling records can cause information breaches, exposing sensitive facts.
+Differential Privacy: This method can be hired to shield man or woman privacy whilst allowing statistics-driven insights.
+Model Security
+Intellectual Property Protection: AI models represent substantial highbrow property and are liable to robbery and opposite engineering.
+Model Poisoning: Malicious actors can manage training statistics to degrade version overall performance or introduce biases.
+Model Stealing: Adversaries can extract treasured information from a model without access to training statistics.
+Adversarial Attacks
+Evasion Attacks: These assaults intention to lie to AI structures by means of manipulating inputs to produce wrong outputs.
