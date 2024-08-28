@@ -1,0 +1,107 @@
+// src/CityMap.js
+
+import React, { useEffect, useRef, useState } from 'react';
+import * as d3 from 'd3';
+import * as topojson from 'topojson-client';
+
+const CityMap = () => {
+  const [cities, setCities] = useState([]);
+  const svgRef = useRef();
+
+  useEffect(() => {
+    // Fetch the cities data from JSON file
+    d3.json('/cities.json').then(data => {
+      setCities(data);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (cities.length === 0) return;
+
+    const width = 800;
+    const height = 600;
+
+    const svg = d3.select(svgRef.current)
+      .attr('width', width)
+      .attr('height', height);
+
+    const projection = d3.geoMercator()
+      .center([0, 20]) // Center the map
+      .scale(150)
+      .translate([width / 2, height / 2]);
+
+    const path = d3.geoPath().projection(projection);
+
+    // Tooltip div
+    const tooltip = d3.select("body").append("div")
+      .attr("class", "tooltip")
+      .style("position", "absolute")
+      .style("visibility", "hidden")
+      .style("background-color", "white")
+      .style("border", "1px solid black")
+      .style("padding", "5px")
+      .style("border-radius", "5px")
+      .style("pointer-events", "none");
+
+    // Load and display the World
+    d3.json('https://unpkg.com/world-atlas@1/world/110m.json').then(worldData => {
+      const countries = topojson.feature(worldData, worldData.objects.countries).features;
+
+      svg.selectAll('.country')
+        .data(countries)
+        .enter()
+        .append('path')
+        .attr('class', 'country')
+        .attr('d', path)
+        .attr('fill', '#ccc')
+        .attr('stroke', '#333');
+
+      // Draw city circles
+      svg.selectAll('.city')
+        .data(cities)
+        .enter()
+        .append('circle')
+        .attr('class', 'city')
+        .attr('cx', d => projection([d.longitude, d.latitude])[0])
+        .attr('cy', d => projection([d.longitude, d.latitude])[1])
+        .attr('r', 5)
+        .attr('fill', 'red')
+        .on("mouseover", function (event, d) {
+          tooltip.style("visibility", "visible")
+            .text(d.name);
+        })
+        .on("mousemove", function (event) {
+          tooltip.style("top", (event.pageY - 10) + "px")
+            .style("left", (event.pageX + 10) + "px");
+        })
+        .on("mouseout", function () {
+          tooltip.style("visibility", "hidden");
+        });
+
+      // Draw lines between cities
+      svg.selectAll('.line')
+        .data(cities)
+        .enter()
+        .append('line')
+        .attr('class', 'line')
+        .attr('x1', (d, i) => projection([d.longitude, d.latitude])[0])
+        .attr('y1', (d, i) => projection([d.longitude, d.latitude])[1])
+        .attr('x2', (d, i) => i < cities.length - 1 ? projection([cities[i + 1].longitude, cities[i + 1].latitude])[0] : projection([cities[0].longitude, cities[0].latitude])[0])
+        .attr('y2', (d, i) => i < cities.length - 1 ? projection([cities[i + 1].longitude, cities[i + 1].latitude])[1] : projection([cities[0].longitude, cities[0].latitude])[1])
+        .attr('stroke', 'blue')
+        .attr('stroke-width', 2);
+    });
+
+    // Clean up the tooltip on unmount
+    return () => {
+      tooltip.remove();
+    };
+
+  }, [cities]);
+
+  return (
+    <svg ref={svgRef}></svg>
+  );
+};
+
+export default CityMap;
