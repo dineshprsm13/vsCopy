@@ -1,0 +1,29 @@
+// Filter down the labels by label rank (only show the most important labels)
+var labelData = data.features.filter(function(d) {
+  return d.properties.labelrank < 4;
+});
+
+var labels = grp.selectAll('text.label').data(labelData);
+
+labels
+  .enter()
+  .append('text')
+  .classed('label', true);
+
+labels
+  .attr('x', function(d) {
+    return projection(d3.geo.centroid(d))[0];
+  })
+  .attr('y', function(d) {
+    return projection(d3.geo.centroid(d))[1];
+  })
+  .attr('text-anchor', function(d, i) {
+    // Randomly align the label
+    var idx = Math.round(3 * Math.random());
+    return ['start', 'middle', 'end'][idx];
+  })
+  .text(function(d) {
+    return d.properties.admin;
+  });
+
+labels.exit().remove();
