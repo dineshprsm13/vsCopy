@@ -1,0 +1,69 @@
+using JiraIntegrationAPI.Models;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace JiraIntegrationAPI.Services
+{
+    public class JiraService : IJiraService
+    {
+        private readonly HttpClient _httpClient;
+        private readonly JiraConfig _config;
+
+        public JiraService(HttpClient httpClient, IConfiguration configuration)
+        {
+            _httpClient = httpClient;
+            _config = configuration.GetSection("Jira").Get<JiraConfig>();
+
+            // Set up the HttpClient with base address and authentication
+            _httpClient.BaseAddress = new Uri(_config.BaseUrl);
+            var authToken = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_config.Email}:{_config.ApiToken}"));
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authToken);
+            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        }
+
+        public async Task<List<JiraIssue>> GetIssuesByEpicAsync(string epicId)
+        {
+            // JQL to find issues linked to the given epic
+            string jql = $"\"Epic Link\" = {epicId}";
+            string encodedJql = Uri.EscapeDataString(jql);
+
+            string url = $"/rest/api/3/search?jql={encodedJql}&expand=changelog&fields=summary,assignee,status,subtasks,attachment,worklog";
+
+            var response = await _httpClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+            var searchResult = JsonConvert.DeserializeObject<JiraSearchResult>(content);
+
+            return searchResult.Issues;
+        }
+
+        public async Task<JiraIssue> GetIssueAsync(string issueId)
+        {
+            string url = $"/rest/api/3/issue/{issueId}?expand=changelog&fields=summary,assignee,status,subtasks,attachment,worklog";
+
+            var response = await _httpClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+            var issue = JsonConvert.DeserializeObject<JiraIssue>(content);
+
+            return issue;
+        }
+    }
+
+    // Models/JiraSearchResult.cs
+    public class JiraSearchResult
+    {
+        [JsonProperty("issues")]
+        public List<JiraIssue> Issues { get; set; }
+
+        // Add other search result fields if needed
+    }
+}
