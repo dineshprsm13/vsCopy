@@ -1,0 +1,146 @@
+using JiraIntegrationAPI.Models;
+using JiraIntegrationAPI.Services;
+using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace JiraIntegrationAPI.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class JiraController : ControllerBase
+    {
+        private readonly IJiraService _jiraService;
+
+        public JiraController(IJiraService jiraService)
+        {
+            _jiraService = jiraService;
+        }
+
+        /// <summary>
+        /// Gets all issues under a specific Epic, including subtasks, attachments, assignee, status, history, and logged hours.
+        /// </summary>
+        /// <param name="epicId">The Epic ID in Jira.</param>
+        /// <returns>A list of Jira issues with detailed information.</returns>
+        [HttpGet("epic/{epicId}")]
+        public async Task<ActionResult<IEnumerable<JiraIssueDto>>> GetIssuesByEpic(string epicId)
+        {
+            var issues = await _jiraService.GetIssuesByEpicAsync(epicId);
+
+            var result = new List<JiraIssueDto>();
+
+            foreach (var issue in issues)
+            {
+                var dto = new JiraIssueDto
+                {
+                    Id = issue.Id,
+                    Key = issue.Key,
+                    Summary = issue.Fields.Summary,
+                    Assignee = issue.Fields.Assignee?.DisplayName,
+                    Status = issue.Fields.Status?.Name,
+                    Subtasks = issue.Fields.Subtasks?.Select(st => new JiraSubtaskDto
+                    {
+                        Id = st.Id,
+                        Key = st.Key,
+                        Summary = st.Fields.Summary,
+                        Assignee = st.Fields.Assignee?.DisplayName,
+                        Status = st.Fields.Status?.Name
+                    }).ToList(),
+                    Attachments = issue.Fields.Attachments?.Select(att => new JiraAttachmentDto
+                    {
+                        Id = att.Id,
+                        Filename = att.Filename,
+                        ContentUrl = att.Content
+                    }).ToList(),
+                    History = await GetIssueHistory(issue.Key),
+                    LoggedHours = issue.Fields.Worklog?.Worklogs.Sum(w => ParseTimeSpent(w.TimeSpent))
+                };
+
+                result.Add(dto);
+            }
+
+            return Ok(result);
+        }
+
+        private async Task<List<JiraHistoryDto>> GetIssueHistory(string issueKey)
+        {
+            var issue = await _jiraService.GetIssueAsync(issueKey);
+            var histories = new List<JiraHistoryDto>();
+
+            if (issue.Fields == null || issue.Fields.Worklog == null)
+                return histories;
+
+            foreach (var worklog in issue.Fields.Worklog.Worklogs)
+            {
+                histories.Add(new JiraHistoryDto
+                {
+                    Author = worklog.Author?.DisplayName,
+                    TimeSpent = worklog.TimeSpent,
+                    Created = worklog.Created
+                });
+            }
+
+            return histories;
+        }
+
+        private double ParseTimeSpent(string timeSpent)
+        {
+            // Example: "3h 30m" -> 3.5
+            double totalHours = 0;
+            var parts = timeSpent.Split(' ');
+            foreach (var part in parts)
+            {
+                if (part.EndsWith("h"))
+                {
+                    if (double.TryParse(part.TrimEnd('h'), out double hours))
+                        totalHours += hours;
+                }
+                else if (part.EndsWith("m"))
+                {
+                    if (double.TryParse(part.TrimEnd('m'), out double minutes))
+                        totalHours += minutes / 60;
+                }
+            }
+            return totalHours;
+        }
+    }
+
+    // DTOs
+
+    public class JiraIssueDto
+    {
+        public string Id { get; set; }
+        public string Key { get; set; }
+        public string Summary { get; set; }
+        public string Assignee { get; set; }
+        public string Status { get; set; }
+        public List<JiraSubtaskDto> Subtasks { get; set; }
+        public List<JiraAttachmentDto> Attachments { get; set; }
+        public List<JiraHistoryDto> History { get; set; }
+        public double? LoggedHours { get; set; }
+    }
+
+    public class JiraSubtaskDto
+    {
+        public string Id { get; set; }
+        public string Key { get; set; }
+        public string Summary { get; set; }
+        public string Assignee { get; set; }
+        public string Status { get; set; }
+    }
+
+    public class JiraAttachmentDto
+    {
+        public string Id { get; set; }
+        public string Filename { get; set; }
+        public string ContentUrl { get; set; }
+    }
+
+    public class JiraHistoryDto
+    {
+        public string Author { get; set; }
+        public string TimeSpent { get; set; }
+        public string Created { get; set; }
+    }
+}
