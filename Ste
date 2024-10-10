@@ -1,0 +1,51 @@
+using JiraIntegrationAPI.Services;
+// ... other using statements
+
+public class Startup
+{
+    public Startup(IConfiguration configuration)
+    {
+        Configuration = configuration;
+    }
+
+    public IConfiguration Configuration { get; }
+
+    // ConfigureServices is where you register dependencies
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddControllers();
+
+        // Register JiraConfig for DI
+        services.Configure<JiraConfig>(Configuration.GetSection("Jira"));
+
+        // Register JiraService
+        services.AddHttpClient<IJiraService, JiraService>();
+
+        // Add Swagger for API documentation (optional but recommended)
+        services.AddSwaggerGen();
+    }
+
+    // Configure is where you set up the HTTP request pipeline
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        // ... existing middleware
+
+        // Enable middleware to serve generated Swagger as a JSON endpoint.
+        app.UseSwagger();
+
+        // Enable middleware to serve swagger-ui
+        app.UseSwaggerUI(c =>
+        {
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "Jira Integration API V1");
+        });
+
+        app.UseRouting();
+
+        app.UseAuthorization();
+
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapControllers();
+        });
+    }
+}
