@@ -1,0 +1,88 @@
+using Newtonsoft.Json;
+using System.Collections.Generic;
+
+namespace JiraIntegrationAPI.Models
+{
+    public class JiraIssue
+    {
+        [JsonProperty("id")]
+        public string Id { get; set; }
+
+        [JsonProperty("key")]
+        public string Key { get; set; }
+
+        [JsonProperty("fields")]
+        public JiraFields Fields { get; set; }
+    }
+
+    public class JiraFields
+    {
+        [JsonProperty("summary")]
+        public string Summary { get; set; }
+
+        [JsonProperty("assignee")]
+        public JiraUser Assignee { get; set; }
+
+        [JsonProperty("status")]
+        public JiraStatus Status { get; set; }
+
+        [JsonProperty("subtasks")]
+        public List<JiraIssue> Subtasks { get; set; }
+
+        [JsonProperty("attachment")]
+        public List<JiraAttachment> Attachments { get; set; }
+
+        [JsonProperty("worklog")]
+        public JiraWorklog Worklog { get; set; }
+
+        // Add other fields as needed
+    }
+
+    public class JiraUser
+    {
+        [JsonProperty("displayName")]
+        public string DisplayName { get; set; }
+
+        // Add other user fields as needed
+    }
+
+    public class JiraStatus
+    {
+        [JsonProperty("name")]
+        public string Name { get; set; }
+    }
+
+    public class JiraAttachment
+    {
+        [JsonProperty("id")]
+        public string Id { get; set; }
+
+        [JsonProperty("filename")]
+        public string Filename { get; set; }
+
+        [JsonProperty("content")]
+        public string Content { get; set; }
+
+        // Add other attachment fields as needed
+    }
+
+    public class JiraWorklog
+    {
+        [JsonProperty("worklogs")]
+        public List<JiraWorklogEntry> Worklogs { get; set; }
+    }
+
+    public class JiraWorklogEntry
+    {
+        [JsonProperty("timeSpent")]
+        public string TimeSpent { get; set; }
+
+        [JsonProperty("author")]
+        public JiraUser Author { get; set; }
+
+        [JsonProperty("created")]
+        public string Created { get; set; }
+
+        // Add other worklog fields as needed
+    }
+}
