@@ -1,0 +1,28 @@
+Here’s a simplified version of the acceptance criteria using the format you’ve suggested:
+
+---
+
+### **Acceptance Criteria**
+
+- **AC1**: The API must allow creating a new LOB with the following fields:  
+  - **Name**: Required, unique, max length 100 characters.  
+  - **Description**: Optional, max length 500 characters.  
+  - **Hierarchy**: Required, specifies the relationship of this LOB to others.  
+  - **Notes**: Optional, max length 1000 characters.  
+
+- **AC2**: The API must enforce proper validation:  
+  - Return `400 Bad Request` for missing/invalid required fields or exceeding character limits.  
+  - Return `201 Created` for successful creation.  
+  - Return `403 Forbidden` for unauthorized access.  
+
+- **AC3**: The API must require authentication and authorization to ensure only authorized users can create LOBs.  
+
+- **AC4**: Successfully created LOBs must be stored in the database, and a unique LOB ID must be returned in the response.  
+
+- **AC5**: All errors must include meaningful messages in the response body (e.g., `{"error": "Name is required"}`).
+
+- **AC6**: The API response time should be less than 200ms under normal load.  
+
+---
+
+This is concise and can be easily added to a Jira ticket. Let me know if you’d like further adjustments!
