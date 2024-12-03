@@ -1,0 +1,10 @@
+SELECT 'ALTER TABLE TABLE1 ADD (' || column_name || ' ' || data_type || 
+       CASE WHEN data_type IN ('VARCHAR2', 'CHAR', 'NUMBER') THEN '(' || data_length || ')' ELSE '' END || ');'
+FROM all_tab_columns
+WHERE table_name = 'TABLE2'
+AND column_name NOT IN (
+    SELECT column_name
+    FROM all_tab_columns
+    WHERE table_name = 'TABLE1'
+)
+AND owner = 'YOUR_SCHEMA';
