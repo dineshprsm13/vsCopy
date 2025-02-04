@@ -1,0 +1,29 @@
+using Oracle.ManagedDataAccess.Client;
+using System;
+
+class Program
+{
+    static void Main()
+    {
+        string ldapUrl = "ldap://cidlpuser.dinesh.com:389/cn=OracleConte,dc=bankofamerica,dc=dinesh,dc=com/BDTSD001";
+        string userId = "your_user_id";   // Replace with your LDAP user ID
+        string password = "your_password"; // Replace with your LDAP password
+
+        // Construct the connection string
+        string connectionString = $"User Id={userId};Password={password};Data Source={ldapUrl}";
+
+        // Create and open the Oracle connection
+        using (OracleConnection connection = new OracleConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+                Console.WriteLine("Connection to Oracle database opened successfully!");
+            }
+            catch (OracleException ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+        }
+    }
+}
