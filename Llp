@@ -1,0 +1,65 @@
+using System;
+using System.Configuration;
+using System.DirectoryServices;
+using Oracle.ManagedDataAccess.Client;
+
+class Program
+{
+    static void Main()
+    {
+        // Get the base LDAP connection string from web.config
+        string ldapConnectionString = ConfigurationManager.ConnectionStrings["OracleLdapConnection"].ConnectionString;
+
+        // Extract the LDAP URL from the connection string
+        string[] ldapUrls = ldapConnectionString.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+        
+        // Iterate over each LDAP URL
+        foreach (string ldapUrl in ldapUrls)
+        {
+            try
+            {
+                // Example: ldap://cidlpuser.dinesh.com:389/cn=OracleConte,dc=bankofamerica,dc=dinesh,dc=com/BDTSD001
+                Uri ldapUri = new Uri(ldapUrl.Split(';')[0]); // Split to ignore User ID/Password
+
+                // Connect to the LDAP server
+                using (DirectoryEntry entry = new DirectoryEntry(ldapUri.ToString()))
+                {
+                    // Retrieve the Oracle connection string from an attribute (assuming it's stored as 'orclNetDescString')
+                    string oracleConnectionString = entry.Properties["orclNetDescString"].Value?.ToString();
+
+                    if (!string.IsNullOrEmpty(oracleConnectionString))
+                    {
+                        Console.WriteLine($"Retrieved Oracle Connection String: {oracleConnectionString}");
+
+                        // Establish connection with Oracle
+                        ConnectToOracle(oracleConnectionString);
+                        break; // Exit if successful
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error connecting to LDAP URL {ldapUrl}: {ex.Message}");
+            }
+        }
+    }
+
+    static void ConnectToOracle(string connectionString)
+    {
+        using (OracleConnection conn = new OracleConnection(connectionString))
+        {
+            conn.Open();
+            Console.WriteLine("Connected to Oracle successfully!");
+
+            string query = "SELECT * FROM Employee";
+            using (OracleCommand cmd = new OracleCommand(query, conn))
+            using (OracleDataReader reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    Console.WriteLine($"{reader["EmployeeId"]}, {reader["EmployeeName"]}");
+                }
+            }
+        }
+    }
+}
