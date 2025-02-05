@@ -1,0 +1,84 @@
+using System;
+using System.Configuration;
+using System.DirectoryServices;
+
+class Program
+{
+    static void Main()
+    {
+        // Get the LDAP Oracle Connection string from web.config
+        string ldapOracleConnectionString = ConfigurationManager.ConnectionStrings["LDAPOracleConnection"].ConnectionString;
+
+        // Split connection string into LDAP URLs and Oracle credentials
+        string[] parts = ldapOracleConnectionString.Split(';');
+
+        // Extract LDAP data source details
+        string ldapDataSource = parts[0].Replace("Data source=", "").Trim();
+
+        // Extract Oracle credentials (User Id and Password)
+        string oracleCredentials = parts[1].Trim();
+
+        // Split LDAP URLs (Multiple LDAP servers)
+        string[] ldapServers = ldapDataSource.Split(',');
+
+        // Loop through each LDAP URL to find the correct LDAP data source and retrieve the Oracle connection string
+        foreach (var ldapUrl in ldapServers)
+        {
+            try
+            {
+                // Ensure URL is trimmed to avoid trailing spaces
+                string trimmedUrl = ldapUrl.Trim();
+
+                // Extract the Service ID dynamically from the LDAP URL (after the last '/')
+                int lastSlashIndex = trimmedUrl.LastIndexOf('/');
+                if (lastSlashIndex == -1 || lastSlashIndex == trimmedUrl.Length - 1)
+                {
+                    Console.WriteLine("Invalid LDAP URL format: " + trimmedUrl);
+                    continue;
+                }
+
+                // Extract the service ID correctly
+                string serviceID = trimmedUrl.Substring(lastSlashIndex + 1).Trim();
+
+                // Build the LDAP path without the service ID for DirectoryEntry
+                string ldapPath = trimmedUrl.Substring(0, lastSlashIndex);
+
+                using (DirectoryEntry entry = new DirectoryEntry(ldapPath))
+                {
+                    using (DirectorySearcher searcher = new DirectorySearcher(entry))
+                    {
+                        // Correct filter using the actual service ID
+                        searcher.Filter = "(cn=" + serviceID + ")";
+
+                        searcher.PropertiesToLoad.Add("orclNetDescString");  // Attribute that holds the Oracle connection string
+
+                        SearchResult result = searcher.FindOne();
+                        if (result != null && result.Properties.Contains("orclNetDescString"))
+                        {
+                            // Retrieve the Oracle Net descriptor from the LDAP result
+                            string baseConnectionString = result.Properties["orclNetDescString"][0].ToString();
+
+                            // Concatenate the Oracle connection string with the credentials
+                            string finalConnectionString = baseConnectionString + ";" + oracleCredentials;
+
+                            Console.WriteLine("Final Oracle Connection String:");
+                            Console.WriteLine(finalConnectionString);
+                            return; // Exit after successfully constructing the connection string
+                        }
+                        else
+                        {
+                            Console.WriteLine("No matching service ID found in LDAP: " + serviceID);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error connecting to " + ldapUrl.Trim() + ": " + ex.Message);
+                continue; // Try next LDAP server if the current one fails
+            }
+        }
+
+        Console.WriteLine("Service ID not found in any LDAP server.");
+    }
+}
