@@ -1,0 +1,54 @@
+using System;
+using System.Configuration; // Requires System.Configuration.dll
+using System.DirectoryServices;
+
+class Program
+{
+    static void Main()
+    {
+        // Fetch connection string from web.config
+        string connectionString = ConfigurationManager.ConnectionStrings["OracleDb"].ConnectionString;
+
+        // Extract LDAP paths (assuming they are comma-separated)
+        string[] ldapPaths = connectionString.Split(new[] { "Data Source=" }, StringSplitOptions.None)[1]
+                                             .Split(',');
+
+        foreach (var fullLdapPath in ldapPaths)
+        {
+            try
+            {
+                // Parse LDAP path and service name
+                int lastSlashIndex = fullLdapPath.LastIndexOf('/');
+                string ldapPath = fullLdapPath.Substring(0, lastSlashIndex);        // e.g., ldap://ldap1.dinesh.com:389/cn=OracleConte,dc=...
+                string serviceName = fullLdapPath.Substring(lastSlashIndex + 1);    // e.g., BDTSD001
+
+                Console.WriteLine($"Searching for Service: {serviceName} in {ldapPath}");
+
+                // Query LDAP
+                using (DirectoryEntry ldapConnection = new DirectoryEntry(ldapPath))
+                {
+                    DirectorySearcher search = new DirectorySearcher(ldapConnection)
+                    {
+                        Filter = $"(cn={serviceName})"
+                    };
+                    search.PropertiesToLoad.Add("orclNetDescString"); // Oracle-specific property
+
+                    SearchResult result = search.FindOne();
+                    if (result != null)
+                    {
+                        string connectionDetails = result.Properties["orclNetDescString"][0].ToString();
+                        Console.WriteLine($"Connection Details for {serviceName}: {connectionDetails}\n");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Service {serviceName} not found in LDAP.\n");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error querying {fullLdapPath}: {ex.Message}\n");
+            }
+        }
+    }
+}
