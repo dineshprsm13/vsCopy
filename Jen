@@ -1,0 +1,8 @@
+Problem Statement:
+Currently, we need to manually pull changes from our application to update the Jenkins/YAML file, which requires creating a story, defining testing scenarios, and going through an OTA review. This lengthy process delays updates and sometimes leads to unclear property definitions.
+
+Target State:
+We aim to provide a UI-based solution for accessing and updating the Jenkins/YAML file directly. This will eliminate the need for manual pulls, streamline the update process, and reduce the dependency on multiple review steps.
+
+User Experience Enhancement:
+By allowing direct updates through the UI, we can improve efficiency, ensure better property clarity, and reduce the overall cycle time for changes.
